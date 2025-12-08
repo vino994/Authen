@@ -48,11 +48,19 @@ export const login = async (req, res) => {
 };
 
 // Forgot Password
+// Forgot Password
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const lowerEmail = email.toLowerCase();
     if (!email) return res.status(400).json({ msg: "Email required" });
+
+    // ⭐ Wake the Render server (important for real users)
+    try {
+      await fetch(`${process.env.BACKEND_URL}/api/auth/test`);
+    } catch (err) {
+      console.log("Wake-up failed (normal on Render free plan)");
+    }
 
     const user = await User.findOne({ email: lowerEmail });
     if (!user) return res.status(404).json({ msg: "User not found" });
@@ -62,12 +70,17 @@ export const forgotPassword = async (req, res) => {
     user.resetTokenExpire = Date.now() + Number(process.env.RESET_TOKEN_EXPIRY || 600000);
     await user.save();
 
-    const link = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    // ⭐ Make sure FRONTEND_URL has NO trailing slash
+    const frontend = process.env.FRONTEND_URL.replace(/\/$/, "");
+
+    const link = `${frontend}/reset-password/${token}`;
+
     const html = `
       <h3>Password reset</h3>
       <p>Click link to reset password (expires in 10 mins):</p>
       <a href="${link}">${link}</a>
     `;
+
     await sendEmail(user.email, "Password Reset", html);
 
     res.json({ msg: "Password reset link sent" });
@@ -75,6 +88,7 @@ export const forgotPassword = async (req, res) => {
     res.status(500).json({ msg: err.message });
   }
 };
+
 
 // Reset Password
 export const resetPassword = async (req, res) => {
