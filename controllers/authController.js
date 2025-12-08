@@ -9,14 +9,15 @@ const makeToken = (userId) => jwt.sign({ id: userId }, process.env.JWT_SECRET, {
 // Register
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+ const { name, email, password } = req.body;
+   const lowerEmail = email.toLowerCase();
     if (!email || !password) return res.status(400).json({ msg: "Email and password required" });
 
-    const exists = await User.findOne({ email });
+    const exists = await User.findOne({ email: lowerEmail });
     if (exists) return res.status(400).json({ msg: "Email already exists" });
 
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashed });
+    const user = await User.create({ name, email: lowerEmail, password: hashed });
     const token = makeToken(user._id);
 
     res.json({ msg: "Registered", token, user: { id: user._id, email: user.email, name: user.name } });
@@ -29,9 +30,11 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const lowerEmail = email.toLowerCase();
     if (!email || !password) return res.status(400).json({ msg: "Email and password required" });
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: lowerEmail });
+
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.password);
@@ -48,9 +51,10 @@ export const login = async (req, res) => {
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
+    const lowerEmail = email.toLowerCase();
     if (!email) return res.status(400).json({ msg: "Email required" });
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: lowerEmail });
     if (!user) return res.status(404).json({ msg: "User not found" });
 
     const token = crypto.randomBytes(32).toString("hex");

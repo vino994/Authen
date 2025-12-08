@@ -7,21 +7,20 @@ const sendEmail = async (to, subject, html) => {
       port: process.env.MAIL_PORT,
       auth: {
         user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS
-      }
+        pass: process.env.MAIL_PASS,
+      },
     });
 
     await transporter.sendMail({
-      from: `"Password Reset" <noreply@example.com>`,
+      from: `"J Movies App" <${process.env.MAIL_USER}>`,
       to,
       subject,
-      html
+      html,
     });
 
-    console.log("Email Sent Successfully");
-  } catch (err) {
-    console.error("Email Error:", err);
-    throw new Error("Email could not be sent");
+    console.log("Email sent successfully");
+  } catch (error) {
+    console.error("Email sending error:", error);
   }
 };
 
