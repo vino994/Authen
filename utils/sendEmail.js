@@ -1,22 +1,27 @@
-import dotenv from "dotenv";
-dotenv.config(); // IMPORTANT
-
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import nodemailer from "nodemailer";
 
 const sendEmail = async (to, subject, html) => {
   try {
-    const data = await resend.emails.send({
-      from: process.env.SENDER_EMAIL,
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"J Movies App" <${process.env.MAIL_USER}>`,
       to,
       subject,
       html,
     });
 
-    console.log("MAIL SENT:", data);
+    console.log("Email sent using Gmail SMTP");
   } catch (error) {
-    console.error("Resend email error:", error);
+    console.error("Email sending error:", error);
   }
 };
 
