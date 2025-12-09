@@ -4,8 +4,7 @@ const sendEmail = async (to, subject, html) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false, // Mailtrap works only with secure=false
+      port: process.env.SMTP_PORT,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -13,15 +12,15 @@ const sendEmail = async (to, subject, html) => {
     });
 
     await transporter.sendMail({
-      from: `"J Movies App" <${process.env.SMTP_USER}>`,
+      from: `"J Movies App" <noreply@jmails.com>`,
       to,
       subject,
       html,
     });
 
-    console.log("✅ Email sent using Mailtrap SMTP");
+    console.log("Mail sent successfully using Mailtrap");
   } catch (error) {
-    console.error("❌ Email sending error:", error);
+    console.error("Email sending error:", error);
   }
 };
 
