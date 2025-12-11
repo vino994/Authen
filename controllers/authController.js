@@ -9,10 +9,10 @@ const makeToken = (userId) => jwt.sign({ id: userId }, process.env.JWT_SECRET, {
 // Register
 export const register = async (req, res) => {
   try {
- const { name, email, password } = req.body;
-   const lowerEmail = email.toLowerCase();
+    const { name, email, password } = req.body;
     if (!email || !password) return res.status(400).json({ msg: "Email and password required" });
 
+    const lowerEmail = email.toLowerCase();
     const exists = await User.findOne({ email: lowerEmail });
     if (exists) return res.status(400).json({ msg: "Email already exists" });
 
@@ -30,11 +30,10 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const lowerEmail = email.toLowerCase();
     if (!email || !password) return res.status(400).json({ msg: "Email and password required" });
 
+    const lowerEmail = email.toLowerCase();
     const user = await User.findOne({ email: lowerEmail });
-
     if (!user) return res.status(400).json({ msg: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.password);
@@ -48,19 +47,15 @@ export const login = async (req, res) => {
 };
 
 // Forgot Password
-// Forgot Password
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-
     if (!email) return res.status(400).json({ msg: "Email required" });
 
     const lowerEmail = email.toLowerCase();
     const user = await User.findOne({ email: lowerEmail });
-
     if (!user) return res.status(404).json({ msg: "User not found" });
 
-    // Create reset token
     const token = crypto.randomBytes(32).toString("hex");
     user.resetToken = token;
     user.resetTokenExpire = Date.now() + Number(process.env.RESET_TOKEN_EXPIRY);
@@ -77,16 +72,12 @@ export const forgotPassword = async (req, res) => {
     `;
 
     await sendEmail(user.email, "Password Reset", html);
-
     res.json({ msg: "Password reset link sent!" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server Error", error: err.message });
   }
 };
-
-
-
 
 // Reset Password
 export const resetPassword = async (req, res) => {
@@ -112,5 +103,5 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// Test route (optional)
+// Test route
 export const testRoute = (req, res) => res.send("Auth Route Working!");

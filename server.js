@@ -13,9 +13,14 @@ connectDB();
 
 // CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:3000",
+     process.env.FRONTEND_URL,
+     process.env.BACKEND_URL
+  ],
+  methods: ["GET","POST","PUT","DELETE"],
+  allowedHeaders: ["Content-Type","Authorization"],
   credentials: true
 }));
 
@@ -29,14 +34,17 @@ app.get("/", (req, res) => res.send("Password Reset API Working"));
 
 app.get("/mail-test", async (req, res) => {
   try {
-    await sendEmail("vinodjayasudha@gmail.com", "Test Mail", "<h1>Mail working macha!</h1>");
+    await sendEmail(
+      "vinodjayasudha@gmail.com",
+      "Test Mail",
+      "<h1>Mail working macha!</h1>"
+    );
+
     res.send("Mail sent!");
   } catch (err) {
-    res.status(500).send(err.message);
+    res.status(500).send("Mail error: " + err.message);
   }
 });
-
-
 
 
 // Start server
