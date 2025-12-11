@@ -15,14 +15,15 @@ connectDB();
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "http://localhost:3000",
-     process.env.FRONTEND_URL,
-     process.env.BACKEND_URL
+    "http://localhost:5000",
+    "https://j-movies-app.netlify.app",
+    "https://authen-eytd.onrender.com"
   ],
-  methods: ["GET","POST","PUT","DELETE"],
-  allowedHeaders: ["Content-Type","Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
 
 app.use(express.json());
 
