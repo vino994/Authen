@@ -52,92 +52,39 @@ export const login = async (req, res) => {
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    const all = await User.find({});
-console.log("All Users:", all);
-    const lowerEmail = email.toLowerCase();
+
     if (!email) return res.status(400).json({ msg: "Email required" });
 
-    try {
-      await fetch(`${process.env.BACKEND_URL}/api/auth/test`);
-    } catch (err) {
-      console.log("Render wake-up skipped");
-    }
-
+    const lowerEmail = email.toLowerCase();
     const user = await User.findOne({ email: lowerEmail });
+
     if (!user) return res.status(404).json({ msg: "User not found" });
 
+    // Create reset token
     const token = crypto.randomBytes(32).toString("hex");
     user.resetToken = token;
-    user.resetTokenExpire = Date.now() + Number(process.env.RESET_TOKEN_EXPIRY || 600000);
+    user.resetTokenExpire = Date.now() + Number(process.env.RESET_TOKEN_EXPIRY);
     await user.save();
 
-    const frontend = process.env.FRONTEND_URL.replace(/\/$/, "");
-    const link = `${frontend}/reset-password/${token}`;
+    const frontendURL = process.env.FRONTEND_URL.replace(/\/$/, "");
+    const resetLink = `${frontendURL}/reset-password/${token}`;
 
-  const html = `
-  <table width="100%" cellspacing="0" cellpadding="0" style="font-family: Arial, sans-serif;">
-    <tr>
-      <td align="center">
-        <table width="90%" cellspacing="0" cellpadding="0" style="max-width: 500px; background: #ffffff; padding: 20px; border-radius: 10px;">
-
-          <tr>
-            <td>
-              <h2 style="text-align: center; color: #333;">Password Reset Request</h2>
-              <p style="color: #555;">
-                You requested to reset your password. Click the button below:
-              </p>
-            </td>
-          </tr>
-
-          <!-- BUTTON SECTION - Always clickable -->
-          <tr>
-            <td align="center" style="padding: 20px 0;">
-              <a href="${link}"
-                 style="
-                   background-color: #4CAF50;
-                   color: white;
-                   padding: 12px 20px;
-                   text-decoration: none;
-                   border-radius: 5px;
-                   font-size: 16px;
-                   display: inline-block;
-                 "
-                 target="_blank">
-                Reset Password
-              </a>
-            </td>
-          </tr>
-
-          <!-- FALLBACK LINK -->
-          <tr>
-            <td>
-              <p style="color: #555;">If the button doesn't work, copy the link below:</p>
-              <p style="word-break: break-all;">
-                <a href="${link}" target="_blank">${link}</a>
-              </p>
-            </td>
-          </tr>
-
-          <tr>
-            <td>
-              <p style="color: #888; font-size: 12px;">This link expires in 10 minutes.</p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-`;
-
+    const html = `
+      <h2>Password Reset Request</h2>
+      <p>Click the link below to reset your password:</p>
+      <a href="${resetLink}" target="_blank">${resetLink}</a>
+      <p>This link expires in 10 minutes.</p>
+    `;
 
     await sendEmail(user.email, "Password Reset", html);
 
-    res.json({ msg: "Password reset link sent" });
+    res.json({ msg: "Password reset link sent!" });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    console.error(err);
+    res.status(500).json({ msg: "Server Error", error: err.message });
   }
 };
+
 
 
 
