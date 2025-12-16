@@ -50,18 +50,26 @@ export const login = async (req, res) => {
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ msg: "Email required" });
+    if (!email) {
+      return res.status(400).json({ msg: "Email required" });
+    }
 
     const lowerEmail = email.toLowerCase();
     const user = await User.findOne({ email: lowerEmail });
-    if (!user) return res.status(404).json({ msg: "User not found" });
 
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    // Generate reset token
     const token = crypto.randomBytes(32).toString("hex");
-    user.resetToken = token;
-    user.resetTokenExpire = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+    // Save token and expiry (10 minutes)
+    user.resetToken = token;
+    user.resetTokenExpire = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
+    // Build reset link
     const frontendURL = process.env.FRONTEND_URL.replace(/\/$/, "");
     const resetLink = `${frontendURL}/reset-password/${token}`;
 
@@ -72,13 +80,28 @@ export const forgotPassword = async (req, res) => {
       <p>This link expires in 10 minutes.</p>
     `;
 
-    await sendEmail(user.email, "Password Reset", html);
-    res.json({ msg: "Password reset link sent!" });
+    // 🔐 IMPORTANT: Email should NOT break the API
+    try {
+      await sendEmail(user.email, "Password Reset", html);
+    } catch (emailErr) {
+      console.error("Email send failed:", emailErr.message);
+      // Do NOT throw error – continue response
+    }
+
+    // Always return success to client
+    res.status(200).json({
+      msg: "Password reset link generated successfully"
+    });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ msg: "Server Error", error: err.message });
+    res.status(500).json({
+      msg: "Server Error",
+      error: err.message
+    });
   }
 };
+
 
 // Reset Password
 export const resetPassword = async (req, res) => {
