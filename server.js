@@ -16,7 +16,7 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "http://localhost:5000",
-    "https://j-movies-app.netlify.app",
+    "https://j-movie-app.vercel.app",
     "https://authen-eytd.onrender.com"
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
